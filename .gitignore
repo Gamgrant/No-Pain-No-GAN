@@ -1,1 +1,7 @@
 vault_secrets.py
+*.mp3
+*.mp4
+*.wav
+*.json
+*.pyc
+*.cache
