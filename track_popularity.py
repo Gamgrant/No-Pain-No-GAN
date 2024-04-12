@@ -14,13 +14,6 @@ youtube_api_key = YOUTUBE_API_KEY
 youtube = googleapiclient.discovery.build('youtube', 'v3', developerKey=youtube_api_key)
 
 def get_album_uri(album_name, artist_name):
-    """ Retrieves the Spotify URI of an album.
-    Args:
-        album_name (str): The name of the album.
-        artist_name (str): The name of the artist.
-    Returns:
-        str: The Spotify URI of the album.
-    """
     results = sp.search(q=f'album:{album_name} artist:{artist_name}', type='album')
     if results['albums']['items']:
         album = results['albums']['items'][0]
@@ -29,24 +22,11 @@ def get_album_uri(album_name, artist_name):
         return None
 
 def get_album_tracks(album_uri):
-    """ Retrieves the tracks of an album from Spotify.
-    Args:
-        album_uri (str): The Spotify URI of the album.
-    Returns:
-        list: list of tracks
-    """
     album = sp.album(album_uri)
     return album['tracks']['items']
 
 def get_youtube_video_views(song_title, artist_name):
-    """ Retrieves the view count of the official YouTube video based on the song title and artist.
-    Args:
-        song_title (str): The title of the song.
-        artist_name (str): The name of the artist.
-    Returns:
-        int: The view count of the YouTube video.
-    """
-    search_query = f"{song_title} {artist_name} official music video"
+    search_query = f"{song_title} {artist_name} official song"
     search_response = youtube.search().list(
         q=search_query,
         type='video',
@@ -69,8 +49,8 @@ def get_youtube_video_views(song_title, artist_name):
         return 0
 
 # Main script
-album_name = 'Midnights'
-artist_name = 'Taylor Swift'
+album_name = 'Thriller'
+artist_name = 'Michael Jackson'
 
 popularity_record = []
 
@@ -84,16 +64,21 @@ if album_uri:
     for track in tracks:
         song_title = track['name']
         youtube_views = get_youtube_video_views(song_title, artist_name)
-        popularity_record.append((song_title, youtube_views))
+        if "popularity" in track:
+            spotify_popularity = track["popularity"]
+        else:
+            spotify_popularity = 0
+        popularity_record.append((song_title, spotify_popularity, youtube_views))
 
     # Print the popularity record
     print(f"Album '{album_name}' by '{artist_name}' has the following popularity records:")
-    for song_title, youtube_views in popularity_record:
-        print(f"- {song_title}: {youtube_views} views")
+    for song_title, spotify_popularity, youtube_views in popularity_record:
+        print(f"- {song_title}: {youtube_views} views, Spotify popularity: {spotify_popularity}")
 
     # Print the most popular track
     most_popular_track = max(popularity_record, key=lambda x: x[1])
-    print(f"The most popular track is '{most_popular_track[0]}' with {most_popular_track[1]} views.")
-   
+    print(f"The most popular track based on Spotify popularity is '{most_popular_track[0]}' with {most_popular_track[1]} popularity.")
+    most_popular_track = max(popularity_record, key=lambda x: x[2])
+    print(f"The most popular track based on YouTube views is '{most_popular_track[0]}' with {most_popular_track[2]} views.")
 else:
     print(f"Unable to find the album '{album_name}' by '{artist_name}'")
