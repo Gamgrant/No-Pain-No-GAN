@@ -6,3 +6,5 @@ vault_secrets.py
 *.pyc
 *.cache
 *.csv
+**/.DS_Store
+**/__pycache__
