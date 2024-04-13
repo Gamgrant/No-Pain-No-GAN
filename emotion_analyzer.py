@@ -87,44 +87,49 @@ class EmotionAnalyzer:
         print("Running...", job)
         job.await_complete()
         response = job.get_predictions()
+        # with open('debug_results.json', 'w') as f:
+        #     json.dump(response, f)
 
         results = []
         for song_response in response:
-            # Initialize a dictionary to count the frequency of each emotion
             emotion_counts = {}
+            song_name = song_response['source']['filename'].split('.')[0]
 
-            # Extract predictions from the response
+            # Check for errors or no predictions
+            if not song_response['results']['predictions'] or 'errors' in song_response['results']:
+                results.append((song_name, [("N/A", 0)]))
+                continue
+
             predictions = song_response['results']['predictions'][0]['models']['language']['grouped_predictions'][0]['predictions']
             for prediction in predictions:
-                # Find the emotion with the highest score at this timestamp/prediction
                 if prediction['emotions']:  # Ensure there is at least one emotion
                     highest_emotion = max(prediction['emotions'], key=lambda e: e['score'])
                     emotion_name = highest_emotion['name']
                     
-                    # Increment the count for this emotion
+                    # increment the count for this emotion
                     if emotion_name in emotion_counts:
                         emotion_counts[emotion_name] += 1
                     else:
                         emotion_counts[emotion_name] = 1
 
-            # Sort the emotions based on frequency and get the top k
+            # sort emotions based on frequency and get the top k
             top_emotions = sorted(emotion_counts.items(), key=lambda item: item[1], reverse=True)[:k]
             
-            # Append the top emotions for this song, along with the song name, to the results list
-            song_name = song_response['source']['filename']
             results.append((song_name, top_emotions))
-        
+
         return results
 
     # main function used in main but mainly (no pun intended) for testing
     def run_emotion_analysis(self, files):
         results = self.batch_inference(files, 3)
-        print(results)
+        # print(results)
+        return results
 
 def main():
     analyzer = EmotionAnalyzer(HUME_API_KEY)
-    files = ["SAS_Rant.mp4", "heard_em_say_kanye.mp3"]
-    analyzer.run_analysis(files)
+    files = ["water_tyla.mp3"]
+    results = analyzer.run_emotion_analysis(files)
+    print(results)
 
 if __name__ == "__main__":
     main()

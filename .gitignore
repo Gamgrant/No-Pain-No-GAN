@@ -5,3 +5,4 @@ vault_secrets.py
 *.json
 *.pyc
 *.cache
+*.csv
