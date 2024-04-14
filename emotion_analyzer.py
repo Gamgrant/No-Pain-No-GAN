@@ -2,12 +2,21 @@ from hume import HumeBatchClient
 from hume.models.config import LanguageConfig, FaceConfig
 import json
 import matplotlib.pyplot as plt
-from vault_secrets import HUME_API_KEY
+from vault_secrets import HUME_API_KEYS
 
 class EmotionAnalyzer:
-    def __init__(self, api_key):
-        self.client = HumeBatchClient(api_key)
+    def __init__(self, api_keys):
+        self.api_keys = api_keys
+        self.current_key_index = 0
+        self.client = HumeBatchClient(self.api_keys[self.current_key_index])
         self.lang_config = LanguageConfig()
+        self.error_record = {}
+    
+    def update_api_key(self):
+        """Rotate to the next available API key."""
+        self.current_key_index = (self.current_key_index + 1) % len(self.api_keys)
+        self.client = HumeBatchClient(self.api_keys[self.current_key_index])
+        print(f"API Key rotated to: {self.api_keys[self.current_key_index]}")
 
     @staticmethod
     def print_json_structure(json_obj, indent=0):
@@ -82,52 +91,51 @@ class EmotionAnalyzer:
         plt.show()
     
     # return top k emotions for each song
-    def batch_inference(self, files, k):
+    def batch_inference(self, files, k, retry_count=0, debug=False):
         job = self.client.submit_job([], [self.lang_config], files=files)
         print("Running...", job)
-        job.await_complete()
-        response = job.get_predictions()
-        # with open('debug_results.json', 'w') as f:
-        #     json.dump(response, f)
+        try:
+            job.await_complete()
+            response = job.get_predictions()
+            if debug:
+                with open('debug_results.json', 'w') as f:
+                    json.dump(response, f)
+            return self.parse_results(response, k)
+        except Exception as e:
+            if "E0300" in str(e) and retry_count < len(self.api_keys):  # Assuming E0300 is the error code for rate limits or key issues
+                print("API rate limit exceeded, rotating key.")
+                self.update_api_key()
+                return self.batch_inference(files, k, retry_count + 1)  # Retry with a new key
+            raise e
 
+    def parse_results(self, response, k):
+        debug = True
         results = []
         for song_response in response:
             emotion_counts = {}
             song_name = song_response['source']['filename'].split('.')[0]
-
-            # Check for errors or no predictions
-            if not song_response['results']['predictions'] or 'errors' in song_response['results']:
+            if not song_response['results']['predictions'] or song_response['results']["errors"]:
+                self.error_record[song_name] = song_response['results']['errors']
+                    # print(f"Error for {song_name}: {song_response['results']['errors']}")
                 results.append((song_name, [("N/A", 0)]))
                 continue
-
             predictions = song_response['results']['predictions'][0]['models']['language']['grouped_predictions'][0]['predictions']
             for prediction in predictions:
-                if prediction['emotions']:  # Ensure there is at least one emotion
+                if prediction['emotions']:
                     highest_emotion = max(prediction['emotions'], key=lambda e: e['score'])
                     emotion_name = highest_emotion['name']
-                    
-                    # increment the count for this emotion
-                    if emotion_name in emotion_counts:
-                        emotion_counts[emotion_name] += 1
-                    else:
-                        emotion_counts[emotion_name] = 1
-
-            # sort emotions based on frequency and get the top k
+                    emotion_counts[emotion_name] = emotion_counts.get(emotion_name, 0) + 1
             top_emotions = sorted(emotion_counts.items(), key=lambda item: item[1], reverse=True)[:k]
-            
             results.append((song_name, top_emotions))
-
         return results
 
-    # main function used in main but mainly (no pun intended) for testing
     def run_emotion_analysis(self, files):
         results = self.batch_inference(files, 3)
-        # print(results)
         return results
 
 def main():
-    analyzer = EmotionAnalyzer(HUME_API_KEY)
-    files = ["water_tyla.mp3"]
+    analyzer = EmotionAnalyzer(HUME_API_KEYS)
+    files = ["water_tyla.mp3", "SAS_Rant.mp4", "Heard_Em_Say_kanye.mp3"]
     results = analyzer.run_emotion_analysis(files)
     print(results)
 
