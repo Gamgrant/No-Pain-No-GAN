@@ -4,7 +4,10 @@ vault_secrets.py
 *.wav
 *.json
 *.pyc
-*.cache
 *.csv
+!error_record.json
+!album_metadata_converged_genre.csv
+*.cache
 **/.DS_Store
 **/__pycache__
+

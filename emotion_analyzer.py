@@ -1,5 +1,5 @@
-from hume import HumeBatchClient
-from hume.models.config import LanguageConfig, FaceConfig
+from hume import HumeBatchClient, TranscriptionConfig
+from hume.models.config import LanguageConfig, FaceConfig, ProsodyConfig, BurstConfig
 import json
 import matplotlib.pyplot as plt
 from vault_secrets import HUME_API_KEYS
@@ -9,7 +9,8 @@ class EmotionAnalyzer:
         self.api_keys = api_keys
         self.current_key_index = 0
         self.client = HumeBatchClient(self.api_keys[self.current_key_index])
-        self.lang_config = LanguageConfig()
+        self.model_configs = [ProsodyConfig()]
+        self.transcription_config = TranscriptionConfig(language="en")
         self.error_record = {}
     
     def update_api_key(self):
@@ -60,6 +61,7 @@ class EmotionAnalyzer:
     
         face_data = []
         language_data = []
+        prosody_data = []
         
         # check availability of face and language response 
         if 'face' in song_response['results']['predictions'][0]['models']:
@@ -67,19 +69,25 @@ class EmotionAnalyzer:
         
         if 'language' in song_response['results']['predictions'][0]['models']:
             language_data = song_response['results']['predictions'][0]['models']['language']['grouped_predictions'][0]['predictions']
+        if 'prosody' in song_response['results']['predictions'][0]['models']:
+            prosody_data = song_response['results']['predictions'][0]['models']['prosody']['grouped_predictions'][0]['predictions']
 
         face_emotions = self.process_model_data(face_data, emotion_mapping) if face_data else []
         language_emotions = self.process_model_data(language_data, emotion_mapping) if language_data else []
+        prosody_emotions = self.process_model_data(prosody_data, emotion_mapping) if prosody_data else []
 
         # Separate times and emotions for plotting
         face_times, face_y = zip(*face_emotions) if face_emotions else ([], [])
         lang_times, lang_y = zip(*language_emotions) if language_emotions else ([], [])
+        prosody_times, prosody_y = zip(*prosody_emotions) if prosody_emotions else ([], [])
 
         plt.figure(figsize=(15, 6))
         if face_emotions:
             plt.plot(face_times, face_y, color='blue', label='Face Model')
         if language_emotions:
             plt.plot(lang_times, lang_y, color='red', label='Language Model')
+        if prosody_emotions:
+            plt.plot(prosody_times, prosody_y, color='green', label='Prosody Model')
 
         # Plot config 
         plt.xlabel('Time (s)')
@@ -91,8 +99,8 @@ class EmotionAnalyzer:
         plt.show()
     
     # return top k emotions for each song
-    def batch_inference(self, files, k, retry_count=0, debug=False):
-        job = self.client.submit_job([], [self.lang_config], files=files)
+    def batch_inference(self, files, k, retry_count=0, debug=True):
+        job = self.client.submit_job([], self.model_configs, files=files)
         print("Running...", job)
         try:
             job.await_complete()
@@ -109,7 +117,6 @@ class EmotionAnalyzer:
             raise e
 
     def parse_results(self, response, k):
-        debug = True
         results = []
         for song_response in response:
             emotion_counts = {}
@@ -119,25 +126,30 @@ class EmotionAnalyzer:
                     # print(f"Error for {song_name}: {song_response['results']['errors']}")
                 results.append((song_name, [("N/A", 0)]))
                 continue
-            predictions = song_response['results']['predictions'][0]['models']['language']['grouped_predictions'][0]['predictions']
-            for prediction in predictions:
+            try:
+                prosody_predictions = song_response['results']['predictions'][0]['models']['prosody']['grouped_predictions'][0]['predictions']
+            except:
+                print(f"Error for {song_name}: {song_response['results']}")
+            for prediction in prosody_predictions:
                 if prediction['emotions']:
                     highest_emotion = max(prediction['emotions'], key=lambda e: e['score'])
                     emotion_name = highest_emotion['name']
                     emotion_counts[emotion_name] = emotion_counts.get(emotion_name, 0) + 1
+            
             top_emotions = sorted(emotion_counts.items(), key=lambda item: item[1], reverse=True)[:k]
             results.append((song_name, top_emotions))
         return results
 
-    def run_emotion_analysis(self, files):
-        results = self.batch_inference(files, 3)
+    def run_emotion_analysis(self, files, k):
+        results = self.batch_inference(files, k)
         return results
 
 def main():
     analyzer = EmotionAnalyzer(HUME_API_KEYS)
     files = ["water_tyla.mp3", "SAS_Rant.mp4", "Heard_Em_Say_kanye.mp3"]
-    results = analyzer.run_emotion_analysis(files)
+    results = analyzer.run_emotion_analysis(files, 3)
     print(results)
+   
 
 if __name__ == "__main__":
     main()
