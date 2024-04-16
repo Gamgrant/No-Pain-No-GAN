@@ -9,7 +9,7 @@ class EmotionAnalyzer:
         self.api_keys = api_keys
         self.current_key_index = 0
         self.client = HumeBatchClient(self.api_keys[self.current_key_index])
-        self.model_configs = [ProsodyConfig()]
+        self.model_configs = [LanguageConfig()]
         self.transcription_config = TranscriptionConfig(language="en")
         self.error_record = {}
     
@@ -127,10 +127,12 @@ class EmotionAnalyzer:
                 results.append((song_name, [("N/A", 0)]))
                 continue
             try:
-                prosody_predictions = song_response['results']['predictions'][0]['models']['prosody']['grouped_predictions'][0]['predictions']
+                language_predictions = song_response['results']['predictions'][0]['models']['language']['grouped_predictions'][0]['predictions']
             except:
                 print(f"Error for {song_name}: {song_response['results']}")
-            for prediction in prosody_predictions:
+                self.error_record[song_name] = song_response['results']
+                continue
+            for prediction in language_predictions:
                 if prediction['emotions']:
                     highest_emotion = max(prediction['emotions'], key=lambda e: e['score'])
                     emotion_name = highest_emotion['name']

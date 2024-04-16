@@ -29,17 +29,20 @@ def process_files_in_batches(files, batch_size):
     for i in range(0, len(files), batch_size):
         yield files[i:i + batch_size]
 
-def update_csv_with_emotions(csv_path, audio_directory, analyzer, batch_size=10, k=3):
+def update_csv_with_emotions(csv_path, audio_directory, analyzer, batch_size=10, k=3, use_language_model=False):
     batch_num = 0
     error_count = 0
     df = pd.read_csv(csv_path)
     if 'Top Emotions' not in df.columns:
         df['Top Emotions'] = ""
+    if use_language_model:
+        condition = lambda row: row['Top Emotions'] == "Emotions unable to be determined"
+    else:
+        condition = lambda row: pd.isna(row['Top Emotions']) or row['Top Emotions'].strip() == ""
     file_paths = [
         os.path.join(audio_directory, f"{row['song_id']}.mp3") 
         for index, row in df.iterrows()
-        if os.path.exists(os.path.join(audio_directory, f"{row['song_id']}.mp3"))
-        and (pd.isna(row['Top Emotions']) or row['Top Emotions'].strip() == "")
+        if os.path.exists(os.path.join(audio_directory, f"{row['song_id']}.mp3")) and condition(row)
     ]
     print(f"Found {len(file_paths)} files to process.")
     try:
@@ -64,8 +67,6 @@ def update_csv_with_emotions(csv_path, audio_directory, analyzer, batch_size=10,
         print(traceback.format_exc())
         
     
-
-
 def main():
     csv_path = 'album_metadata_converged_genre.csv' 
     audio_directory = 'audio_new' 
@@ -74,7 +75,7 @@ def main():
     analyzer = EmotionAnalyzer(HUME_API_KEYS)
 
     validate_csv_and_audio_files(csv_path, audio_directory)
-    update_csv_with_emotions(csv_path, audio_directory, analyzer, batch_size=98)
+    update_csv_with_emotions(csv_path, audio_directory, analyzer, batch_size=98, use_language_model=True)
     error_record_formatter(error_record_path, csv_path)
     
     with open('error_record.json', 'w') as f:
