@@ -40,6 +40,7 @@ Relevant metadata contained:
 We used 4899 songs in our project
 
 ![genre](img/genre_pie_chart.png)
+**Figure 1:Pie Chart of song genres**
 
 ## Hume AI
 We attempted to use Hume AI API for predicting top-k emotions in audio samples with a goal in mind to extract the emotions and fuse it with embedding space for potentially better, more pertinent art covers. However, due to the nature of Hume AI and it's ability to only process the music exerpts that contain lyrics, we weren't able to extract top-k emotions since most of the extracted .mp3 song previes did not contain the lyrics.
@@ -52,3 +53,33 @@ We proposed the following 4 approaches:
 4. Conditioning SD with fused music and text embeddings
 
 The first approach did not work due to the explicit content of the lyrics as well as lyrics copyrights. The second approach failed due to the limitations of Hume AI. This is why we proceeded with the the last two approaches.
+
+## Model Architecture
+
+**Stable Diffusion Architecture (SD)**
+
+- Base Model: Utilizes the miniSD-diffusers, fine-tuned from the Stable Diffusion v1.4 checkpoint. Stable Diffusion is renowned for its efficacy in generating high-quality images.
+- Sampling Methodology: Employs DDPM/PNDM samplers to generate images step-by-step from a noise distribution.
+
+**Music Information Retrieval (MIR) Module**
+- VQ-VAE: Vector Quantized Variational AutoEncoder that transforms music samples into discrete code sequences. This encoding captures the essential features of the music.
+- LLM: A Transformer decoder that uses the discrete codes to generate codified audio, supporting tasks like genre classification, key detection, and emotion recognition.
+
+**Adapter Module**
+- Structure: Composed of linear and convolutional layers designed to reshape the music embeddings into a suitable format.
+- Integration: Allows the fusion of music features with text embeddings from the CLIP model used in the Stable Diffusion architecture.
+
+**Fusion Module**
+- Concatenation and Processing: Combines text and music embeddings and processes them through a linear layer to integrate the different modalities.
+- Cross Attention Mechanism: Utilizes a cross attention layer followed by feedforward layers, where the text embeddings serve as queries, and the music embeddings act as keys and values. This setup helps in aligning the musical context with textual cues to generate relevant images.
+
+## Training and Evaluation
+- Dataset: Uses a training set of 3429 samples and an evaluation set of 1470 samples.
+- Prompts: Employs prompts like "Create an album cover for the album <album name>. The genre is <genre>." to guide the image generation process.
+- Hyperparameters: Includes settings like batch size, optimizer (SGD), learning rate adjustments, and a cosine scheduler for learning rate decay.
+- Metrics: Uses Mean Squared Error (MSE) and Fréchet Inception Distance (FID) for quantitative evaluation, along with qualitative assessments.
+This architecture aims to effectively merge the audio and visual domains to create album covers that are not only aesthetically pleasing but also deeply representative of the music's emotional and thematic content.
+
+
+![genre](img/model_architecture.png)
+**Figure 2:Model Architecture**
