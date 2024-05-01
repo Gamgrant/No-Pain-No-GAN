@@ -109,5 +109,14 @@ The first approach did not work due to the explicit content of the lyrics as wel
 ![genre](img/results.png)
 **Figure 5:Generated Images**
 
+| Method | MSE | FID |
+|----------|----------|----------|
+| Prompt only using DDPM | 0.2050 | 170.07 |
+| Prompt only using PNDM | 0.1995 | 218.85 |
+| Prompt + Concatenation using DDPM | 0.2119 | 528.74 |
+| Prompt + Cross Attention using DDPM | 0.2034 | 740.922 |
+| Prompt + Concatenation using PNDM | 0.2475 | 551.53 |
+| Prompt + Cross Attention using PDNM | 0.2896 | 620.47 |
+
 
 
