@@ -43,3 +43,12 @@ We used 4899 songs in our project
 
 ## Hume AI
 We attempted to use Hume AI API for predicting top-k emotions in audio samples with a goal in mind to extract the emotions and fuse it with embedding space for potentially better, more pertinent art covers. However, due to the nature of Hume AI and it's ability to only process the music exerpts that contain lyrics, we weren't able to extract top-k emotions since most of the extracted .mp3 song previes did not contain the lyrics.
+
+## Variation of Experiments
+We proposed the following 4 approaches:
+1. Simply prompting SD using lyrics as the prompt
+2. Prompting SD using the album name and genre prompt + top K emotions
+3. Simply prompting SD using a prompt consisting of the album name and genre
+4. Conditioning SD with fused music and text embeddings
+
+The first approach did not work due to the explicit content of the lyrics as well as lyrics copyrights. The second approach failed due to the limitations of Hume AI. This is why we proceeded with the the last two approaches.
