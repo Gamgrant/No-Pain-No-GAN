@@ -22,3 +22,16 @@ This project involved creating a comprehensive dataset by extracting detailed al
 
 - **Generative Model Application:**
   - Utilized the cleaned dataset to train a generative cross-attention-based model for creating album cover art.
+
+### Metadata Analysis
+Relevant metadata contained:
+
+- Artist name
+- Song name (most popular per album)
+- Genres
+- Album name
+- Top emotions
+We used 4899 songs in our project
+
+![genre](https://github.com/Gamgrant/No-Pain-No-GAN/img/genre_pie_chart.png)
+
