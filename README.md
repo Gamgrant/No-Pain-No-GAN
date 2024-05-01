@@ -1,3 +1,7 @@
+# Goal of the project
+
+The goal of this project is to utilize generative modeling to automate the creation of album cover art, leveraging the high-dimensional semantic space of audio and metadata (like genre and artist popularity). By incorporating audio cues and album information, the aim is to generate visually appealing and contextually relevant album covers that reflect the essence of the music. This approach is intended to reduce the high costs and labor typically associated with designing album covers, particularly benefiting independent and smaller artists.
+
 # No-Pain-No-GAN
 ## Data Processing
 This project involved creating a comprehensive dataset by extracting detailed album information from various sources. The goal was to gather a wide array of data points for each album, ranging from basic metadata to more specific content like song previews and popularity metrics. The data extraction was performed using several web scraping and API tools across multiple platforms, including Wikipedia, Spotify, and YouTube.
