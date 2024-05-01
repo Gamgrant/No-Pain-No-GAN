@@ -74,11 +74,25 @@ The first approach did not work due to the explicit content of the lyrics as wel
 - Cross Attention Mechanism: Utilizes a cross attention layer followed by feedforward layers, where the text embeddings serve as queries, and the music embeddings act as keys and values. This setup helps in aligning the musical context with textual cues to generate relevant images.
 
 ## Training and Evaluation
-- Dataset: Uses a training set of 3429 samples and an evaluation set of 1470 samples.
-- Prompts: Employs prompts like "Create an album cover for the album <album name>. The genre is <genre>." to guide the image generation process.
-- Hyperparameters: Includes settings like batch size, optimizer (SGD), learning rate adjustments, and a cosine scheduler for learning rate decay.
-- Metrics: Uses Mean Squared Error (MSE) and Fréchet Inception Distance (FID) for quantitative evaluation, along with qualitative assessments.
-This architecture aims to effectively merge the audio and visual domains to create album covers that are not only aesthetically pleasing but also deeply representative of the music's emotional and thematic content.
+- Dataset
+  - Train: 3429 samples
+  - Evaluation: 1470 samples
+  - Prompt: Create an album cover for the album <album name>. The genre is <genre>.
+  - Music clip: 25 seconds
+  - Image: 256 by 256
+- Hyperparameters
+  - Samplers: DDPM/PNDM
+  - Maximum Timesteps: 150
+  - Loss: MSE
+  - Batch Size: 1
+  - Optimizer: SGD
+  - Learning Rate: 1e-4
+  - LR Scheduler: Cosine Scheduler with 500 warm up steps
+  - Epochs: 1
+- Evaluation
+  - MSE + FID score for evaluation with ground truth images
+  - Qualitative Evaluations
+
 
 
 ![genre](img/model_architecture.png)
