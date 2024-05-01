@@ -109,6 +109,8 @@ The first approach did not work due to the explicit content of the lyrics as wel
 ![genre](img/results.png)
 **Figure 5:Generated Images**
 
+**Table1 1:MSE loss and FID score for various experimental methods**
+
 | Method | MSE | FID |
 |----------|----------|----------|
 | Prompt only using DDPM | 0.2050 | 170.07 |
