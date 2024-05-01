@@ -33,5 +33,5 @@ Relevant metadata contained:
 - Top emotions
 We used 4899 songs in our project
 
-![genre](https://github.com/Gamgrant/No-Pain-No-GAN/](https://github.com/Gamgrant/No-Pain-No-GAN/tree/main)img/genre_pie_chart.png)
+![genre](img/genre_pie_chart.png)
 
