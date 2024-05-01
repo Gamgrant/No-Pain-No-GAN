@@ -102,6 +102,6 @@ The first approach did not work due to the explicit content of the lyrics as wel
 ![genre](img/Train_MSE.png)
 **Figure 3:MSE loss for Training data vs Training steps**
 
-![genre](img/Evaluation_MSE.png)
+![genre](img/Evalution_MSE.png)
 **Figure 4:MSE loss for Evaluation data vs Training steps**
 
