@@ -6,7 +6,7 @@ module load anaconda3
 conda activate album_cover_art_gen
 
 python final_code/main_sd.py --album_root_path "./album_cover_art" \
-                      --album_metadata_file "./album_metadata_minitest.csv" \
+                      --album_metadata_file "./metadata/album_metadata_minitest.csv" \
                       --model_id "lambdalabs/miniSD-diffusers" \
                       --num_inference_steps 50 \
                       --sampler "ddpm" \
