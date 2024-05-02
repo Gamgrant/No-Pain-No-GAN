@@ -6,7 +6,7 @@ module load anaconda3
 conda activate album_cover_art_gen
 
 python final_code/main_asd_inference.py --album_root_path "./album_cover_art" \
-                      --album_metadata_file "./album_metadata_minitrain.csv" \
+                      --album_metadata_file "./metadata/album_metadata_minitrain.csv" \
                       --audio_embed_folder "./jukebox_outputs" \
                       --model_id "lambdalabs/miniSD-diffusers" \
                       --pretrained_ckpt "./checkpoints/checkpoints_run_150t_linear_layer_nogradclip_pndm_50epochs/checkpoint_asd_epoch45.pth" \
