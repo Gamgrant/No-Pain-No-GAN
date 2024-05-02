@@ -6,8 +6,8 @@ module load anaconda3
 conda activate album_cover_art_gen
 
 python final_code/main_asd.py --album_root_path "./album_cover_art" \
-                      --album_metadata_train_file "./data/album_metadata_train.csv" \
-                      --album_metadata_test_file "./data/album_metadata_test.csv" \
+                      --album_metadata_train_file "./metadata/album_metadata_train.csv" \
+                      --album_metadata_test_file "./metadata/album_metadata_test.csv" \
                       --audio_embed_folder "./jukebox_outputs" \
                       --model_id "lambdalabs/miniSD-diffusers" \
                       --epochs 1 \
